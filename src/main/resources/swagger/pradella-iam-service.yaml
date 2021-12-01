@@ -1,0 +1,149 @@
+swagger: "2.0"
+info:
+  description: "Client identity and access"
+  version: "1.0.0"
+  title: pradella.iam.service
+  contact:
+    email: "lucas.pradella@hotmail.com"
+host: "localhost:8090"
+basePath: "/v1"
+tags:
+  - name: "Auth"
+    description: "means of authenticating"
+  - name: "Admin"
+    description: "exclusive access for admin"
+
+schemes:
+  - "https"
+  - "http"
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+
+paths:
+  /sgm-iam/authenticate:
+    post:
+      tags:
+        - "Auth"
+      summary: "checks credentials and returns a JWT"
+      description: "Means of authenticating"
+      operationId: "authenticate"
+      consumes:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Created user object"
+          required: true
+          schema:
+            $ref: "#/definitions/Login"
+
+      responses:
+        "201":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/LoginResponse"
+        "400":
+          description: "bady request"
+        "404":
+          description: "not found"
+        "500":
+          description: "server error"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /sgm-iam/register:
+    post:
+      security:
+        - Bearer: []
+      tags:
+        - "Admin"
+      summary: "Register new users or applications"
+      description: "ROLE USER and ADMIN is required to access"
+      operationId: "register"
+      consumes:
+        - "application/json"
+      parameters:
+        - name: "type"
+          in: "query"
+          description: "Enter the type of registration you want to perform, user or application"
+          required: true
+          type: "array"
+          items:
+            type: "string"
+            enum:
+              - "APLLICATION"
+              - "USER"
+            default: "APLLICATION"
+        - in: "body"
+          name: "body"
+          description: "Created user object"
+          required: true
+          schema:
+            $ref: "#/definitions/User"
+
+      responses:
+        "201":
+          description: "successful operation"
+        "400":
+          description: "bady request"
+        "404":
+          description: "not found"
+        "500":
+          description: "server error"
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+definitions:
+  User:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      userName:
+        type: "string"
+      firstName:
+        type: "string"
+      lastName:
+        type: "string"
+      email:
+        type: "string"
+      password:
+        type: "string"
+      phone:
+        type: "string"
+      userStatus:
+        type: "integer"
+        format: "int32"
+        description: "User Status"
+
+  Login:
+    type: "object"
+    properties:
+      userName:
+        type: "string"
+      password:
+        type: "string"
+
+  LoginResponse:
+    type: "object"
+    properties:
+      token:
+        type: "string"
+        example: "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlbWFpbCIsInNjb3BlIjpbInJlYWQiLCJ3cml0ZSJdLCJleHAiOjE2MTM5Njg0OTcsImlhdCI6MTYxMzk1MDQ5NywiYXV0aG9yaXRpZXMiOlsiUk9MRV9BRE1JTiwgUk9MRV9QRVJTT04iXX0.4HSU4OTahm-0pnNjDsvbqOa-YJRXMco0FwnTQkkxwrexKtHmRdjwISwLxrMqH2wlaqDPswhlaVor71aHGIn6Pw"
+      type:
+        type: "string"
+        example: "Bearer"
+
+
+  ErrorResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      message:
+        type: "string"
